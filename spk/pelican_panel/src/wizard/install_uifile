@@ -1,0 +1,44 @@
+[
+  {
+    "step_title": "Configuration automatique",
+    "items": [
+      {
+        "type": "textfield",
+        "subitems": [
+          {
+            "key": "wizard_app_url",
+            "desc": "",
+            "defaultValue": "",
+            "hidden": true
+          }
+        ]
+      },
+      {
+        "desc": "<b style='color:#4fc3f7;'>Détection automatique de l'URL</b><br><br>L'URL d'accès sera configurée automatiquement en fonction de votre connexion actuelle.<br><br><b>Ports utilisés :</b><ul><li><code>8080</code> - Panel (HTTP)</li><li><code>8445</code> - Wings API (HTTPS)</li><li><code>2022</code> - Wings SFTP</li></ul>"
+      }
+    ],
+    "activate": "{var h=window.location.hostname;var p=window.location.protocol;var field=arguments[0].findField('wizard_app_url');if(field){field.setValue(p+'//'+h+':8080');}}"
+  },
+  {
+    "step_title": "Prérequis",
+    "items": [
+      {
+        "desc": "<b>Prérequis:</b><ul><li><b>Container Manager</b> (Docker) doit être installé</li><li>Connexion Internet pour télécharger l'image Docker (~500 MB)</li></ul>"
+      },
+      {
+        "desc": "<br><b style='color:#e74c3c;'>IMPORTANT - Premier démarrage :</b><br><br>Le premier démarrage prend <b>5 à 10 minutes</b> pour :<ul><li>Télécharger l'image Docker (~500 MB)</li><li>Exécuter les migrations de base de données</li><li>Configurer l'application</li></ul><br>Une <b>page de chargement</b> s'affichera automatiquement pendant l'initialisation."
+      }
+    ]
+  },
+  {
+    "step_title": "Configuration post-installation",
+    "items": [
+      {
+        "desc": "<b style='color:#4fc3f7;'>Création du compte administrateur :</b><br><br>Une fois les migrations terminées, vous serez redirigé vers le <b>wizard d'installation Pelican</b> pour créer votre compte administrateur.<br><br><i>Conservez précieusement vos identifiants !</i>"
+      },
+      {
+        "desc": "<br><hr><br><b>Configuration de Wings :</b><br>Après avoir créé votre compte admin, consultez la <b>description du paquet</b> dans le Centre de paquets pour configurer Wings."
+      }
+    ]
+  }
+]

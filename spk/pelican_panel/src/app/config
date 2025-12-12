@@ -1,0 +1,36 @@
+{
+	"PelicanPanel.js": {
+		"PelicanPanel.AppInstance": {
+			"type": "app",
+			"title": "Pelican Panel",
+			"desc": "Ouvrir le panel Pelican dans une fenêtre DSM",
+			"icon": "images/pelican_panel-{0}.png",
+			"allowMultiInstance": false,
+			"allUsers": true,
+			"appWindow": "PelicanPanel.AppWindow",
+			"depend": ["PelicanPanel.AppWindow"]
+		},
+		"PelicanPanel.AppWindow": {
+			"type": "lib",
+			"title": "Pelican Panel",
+			"icon": "images/pelican_panel-{0}.png"
+		}
+	},
+	"PelicanWings.js": {
+		"PelicanWings.AppInstance": {
+			"type": "app",
+			"title": "Configurer Wings",
+			"desc": "Configurer le daemon Wings pour ce NAS",
+			"icon": "images/pelican_panel-{0}.png",
+			"allowMultiInstance": false,
+			"allUsers": false,
+			"appWindow": "PelicanWings.AppWindow",
+			"depend": ["PelicanWings.AppWindow"]
+		},
+		"PelicanWings.AppWindow": {
+			"type": "lib",
+			"title": "Configurer Wings",
+			"icon": "images/pelican_panel-{0}.png"
+		}
+	}
+}

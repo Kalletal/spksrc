@@ -1,0 +1,20 @@
+{
+    admin off
+}
+
+# HTTP server on port 8080 (proxied by DSM nginx)
+:8080 {
+    root * /var/www/html/public
+    encode gzip
+
+    # Headers pour permettre l'iframe DSM
+    header {
+        # Supprimer X-Frame-Options pour permettre l'iframe
+        -X-Frame-Options
+        # Permettre l'affichage dans un iframe depuis n'importe quelle origine
+        Content-Security-Policy "frame-ancestors *"
+    }
+
+    file_server
+    php_fastcgi 127.0.0.1:9000
+}

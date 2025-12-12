@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelican Panel - Initialisation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        .logo-container {
+            margin-bottom: 60px;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .progress-container {
+            margin-bottom: 40px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4fc3f7, #29b6f6);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%
+            );
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .progress-percent {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #4fc3f7;
+        }
+
+        .progress-time {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .status-container {
+            min-height: 100px;
+        }
+
+        .status-message {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .migrations-info {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #4fc3f7;
+            font-family: monospace;
+        }
+
+        .current-migration {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Log défilant des migrations */
+        .migrations-log-container {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid rgba(79, 195, 247, 0.2);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .migrations-log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(79, 195, 247, 0.1);
+            cursor: pointer;
+        }
+
+        .migrations-log-title {
+            font-size: 0.85rem;
+            color: #4fc3f7;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .migrations-log-toggle {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .migrations-log {
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.75rem;
+            padding: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .migrations-log::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .migrations-log::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .migrations-log::-webkit-scrollbar-thumb {
+            background: rgba(79, 195, 247, 0.4);
+            border-radius: 3px;
+        }
+
+        .migration-line {
+            display: flex;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .migration-line:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .migration-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .migration-icon.done {
+            color: #81c784;
+        }
+
+        .migration-icon.current {
+            color: #4fc3f7;
+        }
+
+        .migration-name {
+            color: rgba(255, 255, 255, 0.8);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .migration-name.current {
+            color: #4fc3f7;
+            font-weight: 500;
+        }
+
+        .migration-time {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.7rem;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .migrations-log-collapsed .migrations-log {
+            display: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            border-top-color: #4fc3f7;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .warning {
+            margin-top: 50px;
+            padding: 16px 24px;
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .warning-icon {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+
+        .warning-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: left;
+        }
+
+        /* Success state */
+        .success .progress-bar {
+            background: linear-gradient(90deg, #4caf50, #81c784);
+        }
+
+        .success .progress-percent {
+            color: #81c784;
+        }
+
+        .success .spinner {
+            display: none;
+        }
+
+        .success .status-message::before {
+            content: '✓';
+            color: #81c784;
+            font-size: 1.2rem;
+        }
+
+        .checkmark {
+            display: none;
+            color: #81c784;
+        }
+
+        .success .checkmark {
+            display: inline;
+        }
+
+        /* Elapsed time */
+        .elapsed {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="logo-container">
+            <div class="logo">PELICAN</div>
+            <div class="logo-subtitle">Game Server Management</div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="progress-info">
+                <span class="progress-percent" id="progressPercent">0%</span>
+                <span class="progress-time" id="progressTime">Calcul en cours...</span>
+            </div>
+        </div>
+
+        <div class="status-container">
+            <div class="status-message" id="statusMessage">
+                <span class="spinner" id="spinner"></span>
+                <span id="statusText">Connexion au service...</span>
+            </div>
+            <div class="migrations-info" id="migrationsInfo"></div>
+            <div class="current-migration" id="currentMigration"></div>
+        </div>
+
+        <!-- Zone de log défilante des migrations -->
+        <div class="migrations-log-container" id="migrationsLogContainer" style="display: none;">
+            <div class="migrations-log-header" onclick="toggleMigrationsLog()">
+                <span class="migrations-log-title">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                        <path fill-rule="evenodd" d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 3H1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6z"/>
+                    </svg>
+                    Détail des migrations
+                </span>
+                <span class="migrations-log-toggle" id="logToggle">▼ Masquer</span>
+            </div>
+            <div class="migrations-log" id="migrationsLog">
+                <!-- Les lignes de migration seront ajoutées ici -->
+            </div>
+        </div>
+
+        <div class="warning">
+            <span class="warning-icon">⚠</span>
+            <span class="warning-text">
+                Ne fermez pas cette fenêtre. Le premier démarrage peut prendre plusieurs minutes
+                pour initialiser la base de données.
+            </span>
+        </div>
+
+        <div class="elapsed" id="elapsed"></div>
+    </div>
+
+    <script>
+        const elements = {
+            container: document.getElementById('container'),
+            progressBar: document.getElementById('progressBar'),
+            progressPercent: document.getElementById('progressPercent'),
+            progressTime: document.getElementById('progressTime'),
+            statusText: document.getElementById('statusText'),
+            migrationsInfo: document.getElementById('migrationsInfo'),
+            currentMigration: document.getElementById('currentMigration'),
+            spinner: document.getElementById('spinner'),
+            elapsed: document.getElementById('elapsed'),
+            migrationsLogContainer: document.getElementById('migrationsLogContainer'),
+            migrationsLog: document.getElementById('migrationsLog'),
+            logToggle: document.getElementById('logToggle')
+        };
+
+        let lastProgress = 0;
+        let displayedMigrations = new Set();
+        let logCollapsed = false;
+        let isRedirecting = false;
+
+        function formatTime(seconds) {
+            if (seconds <= 0 || !seconds) return '--:--';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+
+        function formatElapsed(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            if (mins === 0) {
+                return `${secs} seconde${secs > 1 ? 's' : ''}`;
+            }
+            return `${mins} minute${mins > 1 ? 's' : ''} ${secs}s`;
+        }
+
+        function formatMigrationName(name) {
+            // Convertit "add_allocations_table" en "Add Allocations Table"
+            if (!name) return '';
+            return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function toggleMigrationsLog() {
+            logCollapsed = !logCollapsed;
+            if (logCollapsed) {
+                elements.migrationsLogContainer.classList.add('migrations-log-collapsed');
+                elements.logToggle.textContent = '▶ Afficher';
+            } else {
+                elements.migrationsLogContainer.classList.remove('migrations-log-collapsed');
+                elements.logToggle.textContent = '▼ Masquer';
+            }
+        }
+
+        function addMigrationToLog(name, isCurrent = false) {
+            if (!name || displayedMigrations.has(name)) return;
+
+            displayedMigrations.add(name);
+
+            const line = document.createElement('div');
+            line.className = 'migration-line';
+            line.id = 'migration-' + name.replace(/[^a-zA-Z0-9]/g, '_');
+
+            const icon = document.createElement('span');
+            icon.className = 'migration-icon ' + (isCurrent ? 'current' : 'done');
+            icon.innerHTML = isCurrent
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'migration-name' + (isCurrent ? ' current' : '');
+            nameSpan.textContent = formatMigrationName(name);
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'migration-time';
+            timeSpan.textContent = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+
+            line.appendChild(icon);
+            line.appendChild(nameSpan);
+            line.appendChild(timeSpan);
+
+            elements.migrationsLog.appendChild(line);
+
+            // Auto-scroll vers le bas
+            elements.migrationsLog.scrollTop = elements.migrationsLog.scrollHeight;
+        }
+
+        function updateMigrationStatus(name, done = true) {
+            const lineId = 'migration-' + name.replace(/[^a-zA-Z0-9]/g, '_');
+            const line = document.getElementById(lineId);
+            if (line) {
+                const icon = line.querySelector('.migration-icon');
+                const nameSpan = line.querySelector('.migration-name');
+                if (done) {
+                    icon.className = 'migration-icon done';
+                    icon.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+                    nameSpan.classList.remove('current');
+                }
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                // Use relative URL to work through CGI proxy
+                const response = await fetch('api/loading-status');
+                const data = await response.json();
+
+                // Update progress bar with smooth animation
+                const progress = Math.max(lastProgress, data.progress || 0);
+                elements.progressBar.style.width = progress + '%';
+                elements.progressPercent.textContent = progress + '%';
+                lastProgress = progress;
+
+                // Update status message
+                elements.statusText.textContent = data.message || 'Chargement...';
+
+                // Update migrations info
+                if (data.migrations_done > 0 && data.migrations_total) {
+                    elements.migrationsInfo.textContent =
+                        `Tables: ${data.migrations_done}/${data.migrations_total}`;
+
+                    // Afficher le conteneur de log
+                    elements.migrationsLogContainer.style.display = 'block';
+
+                    // Ajouter les migrations complétées au log
+                    if (data.completed_migrations && Array.isArray(data.completed_migrations)) {
+                        data.completed_migrations.forEach(m => {
+                            addMigrationToLog(m, false);
+                        });
+                    }
+
+                    // Ajouter/mettre à jour la migration en cours
+                    if (data.current_migration) {
+                        // Marquer l'ancienne migration courante comme terminée
+                        const currentLines = elements.migrationsLog.querySelectorAll('.migration-name.current');
+                        currentLines.forEach(el => {
+                            const name = el.textContent.toLowerCase().replace(/ /g, '_');
+                            updateMigrationStatus(name, true);
+                        });
+
+                        // Ajouter la nouvelle migration courante
+                        addMigrationToLog(data.current_migration, true);
+                        elements.currentMigration.textContent = `→ ${formatMigrationName(data.current_migration)}`;
+                    } else {
+                        elements.currentMigration.textContent = '';
+                    }
+                } else {
+                    elements.migrationsInfo.textContent = '';
+                    elements.currentMigration.textContent = '';
+                }
+
+                // Update time estimate
+                if (data.estimated_remaining_seconds && data.estimated_remaining_seconds > 0) {
+                    elements.progressTime.textContent =
+                        'Temps restant estimé: ' + formatTime(data.estimated_remaining_seconds);
+                } else if (progress >= 95) {
+                    elements.progressTime.textContent = 'Presque terminé...';
+                } else {
+                    elements.progressTime.textContent = 'Calcul en cours...';
+                }
+
+                // Update elapsed time
+                if (data.elapsed_seconds) {
+                    elements.elapsed.textContent =
+                        'Temps écoulé: ' + formatElapsed(data.elapsed_seconds);
+                }
+
+                // Check if ready
+                if (data.panel_ready && !isRedirecting) {
+                    isRedirecting = true;
+                    elements.container.classList.add('success');
+                    elements.statusText.textContent = 'Panel prêt ! Redirection...';
+                    elements.progressBar.style.width = '100%';
+                    elements.progressPercent.textContent = '100%';
+                    elements.progressTime.textContent = '';
+                    elements.migrationsInfo.textContent = '';
+                    elements.currentMigration.textContent = '';
+
+                    // Hide migrations log on success
+                    elements.migrationsLogContainer.style.display = 'none';
+
+                    // Redirect to panel root after a short delay
+                    // Use replace to prevent back button returning to loading page
+                    setTimeout(() => {
+                        // Use relative URL to work through CGI proxy
+                        window.location.replace('./');
+                    }, 1500);
+                }
+
+            } catch (error) {
+                // API not available yet, show waiting state
+                if (!isRedirecting) {
+                    elements.statusText.textContent = 'Connexion au service...';
+                }
+            }
+        }
+
+        // Initial update
+        updateStatus();
+
+        // Update every 1.5 seconds for more responsive feedback
+        const updateInterval = setInterval(() => {
+            if (!isRedirecting) {
+                updateStatus();
+            }
+        }, 1500);
+    </script>
+</body>
+</html>
