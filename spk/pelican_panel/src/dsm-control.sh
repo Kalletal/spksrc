@@ -313,9 +313,11 @@ fix_permissions()
 
     # Panel directories
     mkdir -p "${DATA_DIR}/pelican-data"
-    mkdir -p "${DATA_DIR}/pelican-data/database"
     mkdir -p "${DATA_DIR}/pelican-logs"
     mkdir -p "${DATA_DIR}/pelican-logs/supervisord"
+
+    # MariaDB data directory
+    mkdir -p "${DATA_DIR}/mariadb"
 
     # Wings directories (must exist for Docker-in-Docker)
     mkdir -p "${DATA_DIR}/servers"
@@ -328,16 +330,10 @@ fix_permissions()
     chmod -R 777 "${DATA_DIR}/pelican-logs" 2>/dev/null || true
     chmod 777 "${DATA_DIR}/tmp" 2>/dev/null || true
 
-    # CRITICAL: Fix SQLite database permissions for container user (www-data = UID 82)
-    # Both directory AND file must be owned by UID 82 for SQLite to work
-    # SQLite needs to create journal files (-wal, -shm) in the same directory
-    chown -R 82:82 "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-    chmod 777 "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-    if [ -f "${DATA_DIR}/pelican-data/database/database.sqlite" ]; then
-        chown 82:82 "${DATA_DIR}/pelican-data/database/database.sqlite"
-        chmod 666 "${DATA_DIR}/pelican-data/database/database.sqlite"
-    fi
-    log "SQLite database permissions fixed (owner: UID 82)"
+    # Fix MariaDB data directory permissions (mysql user = UID 999 in mariadb:10.11)
+    chown -R 999:999 "${DATA_DIR}/mariadb" 2>/dev/null || true
+    chmod 755 "${DATA_DIR}/mariadb" 2>/dev/null || true
+    log "MariaDB data directory permissions fixed (owner: UID 999)"
 
     log "Permissions fixed"
 }

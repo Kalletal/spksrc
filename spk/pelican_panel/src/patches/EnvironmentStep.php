@@ -26,7 +26,7 @@ class EnvironmentStep
                     ->required()
                     ->default(url(''))
                     ->extraInputAttributes([
-                        'x-init' => "\$nextTick(() => { if (\$el.value.includes('127.0.0.1') || \$el.value.includes('localhost')) { \$el.value = window.location.origin; \$wire.set('data.env_general.APP_URL', window.location.origin); } })"
+                        'x-init' => "\$nextTick(() => { if (\$el.value.includes('127.0.0.1') || \$el.value.includes('localhost')) { var correctUrl = 'http://' + window.location.hostname + ':8090'; \$el.value = correctUrl; \$wire.set('data.env_general.APP_URL', correctUrl); } })"
                     ]),
                 Fieldset::make('admin_user')
                     ->label(trans('installer.environment.fields.account.section'))

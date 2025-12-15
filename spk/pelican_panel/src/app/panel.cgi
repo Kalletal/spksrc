@@ -4,6 +4,12 @@
 
 PANEL_URL="http://127.0.0.1:8080"
 CGI_BASE="/webman/3rdparty/pelican_panel/panel.cgi"
+DEBUG_LOG="/var/packages/pelican_panel/var/cgi-debug.log"
+
+# Debug logging (comment out in production)
+log_debug() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG" 2>/dev/null
+}
 
 # Build the target path
 if [ -n "$PATH_INFO" ]; then
@@ -19,6 +25,10 @@ else
     TARGET_URL="${PANEL_URL}${TARGET_PATH}"
 fi
 
+log_debug "=== New request ==="
+log_debug "METHOD=$REQUEST_METHOD PATH=$TARGET_PATH"
+log_debug "CONTENT_TYPE=$CONTENT_TYPE CONTENT_LENGTH=$CONTENT_LENGTH"
+
 # Create temp files
 RESPONSE_FILE=$(mktemp)
 HEADER_FILE=$(mktemp)
@@ -27,8 +37,14 @@ BODY_FILE=$(mktemp)
 trap 'rm -f "$RESPONSE_FILE" "$HEADER_FILE" "$MODIFIED_FILE" "$BODY_FILE"' EXIT
 
 # Read POST body if present
+# Use head -c for better performance than dd bs=1
 if [ -n "$CONTENT_LENGTH" ] && [ "$CONTENT_LENGTH" -gt 0 ] 2>/dev/null; then
-    dd bs=1 count="$CONTENT_LENGTH" 2>/dev/null > "$BODY_FILE"
+    head -c "$CONTENT_LENGTH" > "$BODY_FILE"
+    BODY_SIZE=$(wc -c < "$BODY_FILE" | tr -d ' ')
+    log_debug "Body read: expected=$CONTENT_LENGTH actual=$BODY_SIZE"
+    if echo "$TARGET_PATH" | grep -qi "livewire"; then
+        log_debug "Body preview: $(head -c 200 "$BODY_FILE")"
+    fi
 fi
 
 # Build curl command
@@ -67,6 +83,7 @@ esac
 
 # Check if curl succeeded
 if [ ! -s "$HEADER_FILE" ]; then
+    log_debug "ERROR: No response from upstream (header file empty)"
     echo "Content-Type: text/html; charset=utf-8"
     echo ""
     echo "<html><body><h1>502 Bad Gateway</h1><p>Cannot connect to Panel</p></body></html>"
@@ -76,6 +93,12 @@ fi
 # Extract status code
 STATUS_CODE=$(head -1 "$HEADER_FILE" | grep -oE '[0-9]{3}' | head -1)
 [ -z "$STATUS_CODE" ] && STATUS_CODE="200"
+
+RESPONSE_SIZE=$(wc -c < "$RESPONSE_FILE" | tr -d ' ')
+log_debug "Response: status=$STATUS_CODE size=$RESPONSE_SIZE"
+if [ "$STATUS_CODE" -ge 400 ] && echo "$TARGET_PATH" | grep -qi "livewire"; then
+    log_debug "Error response body: $(head -c 500 "$RESPONSE_FILE")"
+fi
 
 echo "Status: $STATUS_CODE"
 

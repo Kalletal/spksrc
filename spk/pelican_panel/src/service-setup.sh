@@ -15,6 +15,7 @@ cleanup_package()
     # Stop and remove Docker containers
     docker rm -f pelican_panel-panel-1 2>/dev/null || true
     docker rm -f pelican_panel-wings-1 2>/dev/null || true
+    docker rm -f pelican_panel-mariadb-1 2>/dev/null || true
     docker rm -f pelican_panel-panel 2>/dev/null || true
 
     # Remove Docker network
@@ -35,25 +36,15 @@ service_preinst()
 create_data_dirs()
 {
     install -d -m 0750 "${VAR_DIR}"
-    # Pelican data directory - contains SQLite DB via Pelican's symlink mechanism
-    # Pelican creates: /pelican-data/database/database.sqlite
-    # Symlink in container: /var/www/html/database/database.sqlite -> /pelican-data/database/database.sqlite
+    # Pelican data directory
     mkdir -p "${DATA_DIR}/pelican-data" 2>/dev/null || true
     chmod 777 "${DATA_DIR}/pelican-data" 2>/dev/null || true
 
-    # Pre-create database directory with correct permissions for container user (www-data = UID 82)
-    # CRITICAL: Both directory AND file must be writable by UID 82 for SQLite to work
-    # SQLite needs to create journal files in the same directory as the database
-    mkdir -p "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-    chown -R 82:82 "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-    chmod 777 "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-
-    # Pre-create empty database file with correct ownership
-    if [ ! -f "${DATA_DIR}/pelican-data/database/database.sqlite" ]; then
-        touch "${DATA_DIR}/pelican-data/database/database.sqlite"
-        chown 82:82 "${DATA_DIR}/pelican-data/database/database.sqlite"
-        chmod 666 "${DATA_DIR}/pelican-data/database/database.sqlite"
-    fi
+    # MariaDB data directory
+    mkdir -p "${DATA_DIR}/mariadb" 2>/dev/null || true
+    chmod 755 "${DATA_DIR}/mariadb" 2>/dev/null || true
+    # MariaDB container runs as mysql user (UID 999 in mariadb:10.11)
+    chown -R 999:999 "${DATA_DIR}/mariadb" 2>/dev/null || true
 
     # Application logs
     mkdir -p "${DATA_DIR}/pelican-logs" 2>/dev/null || true
@@ -81,6 +72,18 @@ generate_app_key()
     fi
 }
 
+# Generate a secure random password for MariaDB
+generate_db_password()
+{
+    if command -v openssl >/dev/null 2>&1; then
+        openssl rand -base64 24 | tr -d '\n/+=' | head -c 32
+    elif command -v python3 >/dev/null 2>&1; then
+        python3 -c "import secrets;import string;print(''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32)))"
+    else
+        tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32
+    fi
+}
+
 detect_nas_ip()
 {
     # Try to get the primary IP address of the NAS
@@ -105,6 +108,12 @@ hydrate_env_file()
         # Generate APP_KEY
         APP_KEY=$(generate_app_key)
         sed -i "s#APP_KEY=.*#APP_KEY=base64:${APP_KEY}#" "${ENV_FILE}"
+
+        # Generate MariaDB passwords
+        DB_PASSWORD=$(generate_db_password)
+        DB_ROOT_PASSWORD=$(generate_db_password)
+        sed -i "s#DB_PASSWORD=.*#DB_PASSWORD=${DB_PASSWORD}#" "${ENV_FILE}"
+        sed -i "s#DB_ROOT_PASSWORD=.*#DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}#" "${ENV_FILE}"
 
         # Use wizard-provided URL if available (detected from browser)
         # Otherwise fallback to auto-detected NAS IP
@@ -230,17 +239,12 @@ service_postupgrade()
     if [ -n "${EFF_USER}" ]; then
         chown "${EFF_USER}:${EFF_USER}" "${ENV_FILE}" 2>/dev/null || true
         chown "${EFF_USER}:${EFF_USER}" "${WINGS_CONFIG}" 2>/dev/null || true
-        # Don't chown the entire DATA_DIR recursively - it breaks SQLite permissions
-        # Only chown specific directories that need the package user
         chown "${EFF_USER}:docker" "${DATA_DIR}" 2>/dev/null || true
         chown "${EFF_USER}:docker" "${DATA_DIR}/wings" 2>/dev/null || true
     fi
 
-    # CRITICAL: Fix SQLite database permissions for container user (www-data = UID 82)
-    # This must be done AFTER any chown operations to ensure correct ownership
-    chown -R 82:82 "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-    chmod 777 "${DATA_DIR}/pelican-data/database" 2>/dev/null || true
-    [ -f "${DATA_DIR}/pelican-data/database/database.sqlite" ] && chmod 666 "${DATA_DIR}/pelican-data/database/database.sqlite" 2>/dev/null || true
+    # Fix MariaDB data directory permissions (mysql user = UID 999)
+    chown -R 999:999 "${DATA_DIR}/mariadb" 2>/dev/null || true
 }
 
 service_preuninst()
@@ -248,6 +252,7 @@ service_preuninst()
     # Stop containers quickly (1 second timeout instead of default 10)
     docker stop -t 1 pelican_panel-panel-1 2>/dev/null || true
     docker stop -t 1 pelican_panel-wings-1 2>/dev/null || true
+    docker stop -t 1 pelican_panel-mariadb-1 2>/dev/null || true
     docker stop -t 1 pelican_panel-panel 2>/dev/null || true
 }
 

@@ -20,13 +20,24 @@
     "activate": "{var h=window.location.hostname;var p=window.location.protocol;var field=arguments[0].findField('wizard_app_url');if(field){field.setValue(p+'//'+h+':8080');}}"
   },
   {
+    "step_title": "Base de données MariaDB",
+    "items": [
+      {
+        "desc": "<b style='color:#4fc3f7;'>Configuration MariaDB automatique</b><br><br>Une base de données <b>MariaDB</b> sera créée automatiquement avec les paramètres suivants :<br><br><table style='width:100%;border-collapse:collapse;'><tr><td style='padding:5px;border:1px solid #555;'><b>Host</b></td><td style='padding:5px;border:1px solid #555;font-family:monospace;'>mariadb</td></tr><tr><td style='padding:5px;border:1px solid #555;'><b>Port</b></td><td style='padding:5px;border:1px solid #555;font-family:monospace;'>3306</td></tr><tr><td style='padding:5px;border:1px solid #555;'><b>Database</b></td><td style='padding:5px;border:1px solid #555;font-family:monospace;'>pelican</td></tr><tr><td style='padding:5px;border:1px solid #555;'><b>Username</b></td><td style='padding:5px;border:1px solid #555;font-family:monospace;'>pelican</td></tr><tr><td style='padding:5px;border:1px solid #555;'><b>Password</b></td><td style='padding:5px;border:1px solid #555;font-family:monospace;'><i>(généré automatiquement)</i></td></tr></table>"
+      },
+      {
+        "desc": "<br><b style='color:#27ae60;'>Note :</b> Ces informations seront pré-remplies dans le wizard Pelican. Vous n'aurez qu'à cliquer sur <b>Next</b> à chaque étape."
+      }
+    ]
+  },
+  {
     "step_title": "Prérequis",
     "items": [
       {
-        "desc": "<b>Prérequis:</b><ul><li><b>Container Manager</b> (Docker) doit être installé</li><li>Connexion Internet pour télécharger l'image Docker (~500 MB)</li></ul>"
+        "desc": "<b>Prérequis:</b><ul><li><b>Container Manager</b> (Docker) doit être installé</li><li>Connexion Internet pour télécharger les images Docker (~600 MB)</li></ul>"
       },
       {
-        "desc": "<br><b style='color:#e74c3c;'>IMPORTANT - Premier démarrage :</b><br><br>Le premier démarrage prend <b>5 à 10 minutes</b> pour :<ul><li>Télécharger l'image Docker (~500 MB)</li><li>Exécuter les migrations de base de données</li><li>Configurer l'application</li></ul><br>Une <b>page de chargement</b> s'affichera automatiquement pendant l'initialisation."
+        "desc": "<br><b style='color:#e74c3c;'>IMPORTANT - Premier démarrage :</b><br><br>Le premier démarrage prend <b>5 à 10 minutes</b> pour :<ul><li>Télécharger les images Docker (Panel + MariaDB)</li><li>Initialiser la base de données MariaDB</li><li>Exécuter les migrations</li></ul><br>Une <b>page de chargement</b> s'affichera automatiquement pendant l'initialisation."
       }
     ]
   },

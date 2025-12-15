@@ -1,6 +1,6 @@
 SPK_NAME = pelican_panel
 SPK_VERS = 1.0.0
-SPK_REV = 118
+SPK_REV = 125
 SPK_ICON = src/PACKAGE_ICON.PNG
 DSM_UI_DIR = app
 DSM_APP_NAME = PelicanPanel.AppInstance
@@ -21,7 +21,7 @@ MAINTAINER_URL = https://github.com/SynoCommunity
 DESCRIPTION = Pelican Panel is a free, open-source game server management panel built with PHP, React, and Go. It includes Wings daemon for server management.
 DESCRIPTION_FRE = Pelican Panel est un panneau de gestion de serveurs de jeux gratuit et open-source construit avec PHP, React et Go. Il inclut le daemon Wings pour la gestion des serveurs.
 DISPLAY_NAME = Pelican Panel
-CHANGELOG = "1.0.0-118: Mise à jour. 1.0.0-117: Mise à jour. 1.0.0-116: Mise à jour. 1.0.0-115: Mise à jour. 1.0.0-114: Mise à jour. 1.0.0-113: Mise à jour. 1.0.0-112: Mise à jour. 1.0.0-111: Mise à jour. 1.0.0-110: Mise à jour. 1.0.0-109: Mise à jour. 1.0.0-108: Mise à jour. 1.0.0-107: Mise à jour. 1.0.0-106: Mise à jour. 1.0.0-105: Mise à jour. 1.0.0-104: Mise à jour. 1.0.0-103: Mise à jour. 1.0.0-102: Mise à jour. 1.0.0-101: Mise à jour. 1.0.0-100: Mise à jour. 1.0.0-99: Mise à jour. 1.0.0-98: Base v91 + detection URL navigateur. 1.0.0-88: Fix permissions SQLite UID 82."
+CHANGELOG = "1.0.0-125: Mise à jour. 1.0.0-124: Mise à jour. 1.0.0-123: Mise à jour. 1.0.0-122: Mise à jour. 1.0.0-121: Mise à jour. 1.0.0-120: Ajout logging debug POST Livewire + optimisation lecture body CGI. 1.0.0-119: Debug logging loading-proxy. 1.0.0-118: Fix URL rewriting regex localhost. 1.0.0-117: Mise à jour. 1.0.0-116: Mise à jour. 1.0.0-115: Mise à jour. 1.0.0-114: Mise à jour. 1.0.0-113: Mise à jour. 1.0.0-112: Mise à jour. 1.0.0-111: Mise à jour. 1.0.0-110: Mise à jour. 1.0.0-109: Mise à jour. 1.0.0-108: Mise à jour. 1.0.0-107: Mise à jour. 1.0.0-106: Mise à jour. 1.0.0-105: Mise à jour. 1.0.0-104: Mise à jour. 1.0.0-103: Mise à jour. 1.0.0-102: Mise à jour. 1.0.0-101: Mise à jour. 1.0.0-100: Mise à jour. 1.0.0-99: Mise à jour. 1.0.0-98: Base v91 + detection URL navigateur. 1.0.0-88: Fix permissions SQLite UID 82."
 
 HOMEPAGE = https://pelican.dev
 LICENSE = MIT

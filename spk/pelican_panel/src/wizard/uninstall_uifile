@@ -10,7 +10,7 @@
         "subitems": [
           {
             "key": "wizard_delete_data",
-            "desc": "Supprimer toutes les données (base de données SQLite, configuration, fichiers téléchargés)",
+            "desc": "Supprimer toutes les données (base de données MariaDB, configuration, fichiers téléchargés)",
             "defaultValue": false
           }
         ]

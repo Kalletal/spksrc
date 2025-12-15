@@ -1056,12 +1056,25 @@ setInterval(update,1500);update();
         """
         try:
             target_url = f"http://127.0.0.1:{PANEL_INTERNAL_PORT}{self.path}"
-            print(f"[proxy] Proxying {method} {self.path} -> {target_url}")
 
             content_length = self.headers.get('Content-Length')
+            content_type = self.headers.get('Content-Type', '')
             body = None
             if content_length:
-                body = self.rfile.read(int(content_length))
+                try:
+                    body = self.rfile.read(int(content_length))
+                    print(f"[proxy] Proxying {method} {self.path} -> {target_url}")
+                    print(f"[proxy]   Content-Type: {content_type}")
+                    print(f"[proxy]   Content-Length header: {content_length}, body read: {len(body) if body else 0} bytes")
+                    if body and 'livewire' in self.path.lower():
+                        # Log first 200 chars of body for Livewire debugging
+                        body_preview = body[:200].decode('utf-8', errors='replace')
+                        print(f"[proxy]   Body preview: {body_preview}...")
+                except Exception as e:
+                    print(f"[proxy] ERROR reading body: {e}")
+                    body = None
+            else:
+                print(f"[proxy] Proxying {method} {self.path} -> {target_url} (no body)")
 
             req = urllib.request.Request(target_url, data=body, method=method)
 
@@ -1115,6 +1128,7 @@ setInterval(update,1500);update();
             opener = urllib.request.build_opener(NoRedirectHandler)
             with opener.open(req, timeout=30) as response:
                 content_type = response.getheader('Content-Type', '')
+                print(f"[proxy]   Response: {response.status} {content_type}")
 
                 if method == 'HEAD':
                     self.send_response(response.status)
@@ -1151,12 +1165,16 @@ setInterval(update,1500);update();
                 self.wfile.write(response_body)
 
         except urllib.error.HTTPError as e:
+            error_body = e.read()
+            print(f"[proxy]   HTTP Error: {e.code}")
+            if 'livewire' in self.path.lower():
+                print(f"[proxy]   Error body: {error_body[:500].decode('utf-8', errors='replace')}")
             self.send_response(e.code)
             for header, value in e.headers.items():
                 if header.lower() not in ('transfer-encoding', 'connection'):
                     self.send_header(header, value)
             self.end_headers()
-            self.wfile.write(e.read())
+            self.wfile.write(error_body)
         except Exception as e:
             print(f"[proxy] Proxy error: {type(e).__name__}: {e}")
             error_msg = f'{{"error": "Proxy error: {str(e)}"}}'.encode('utf-8')
