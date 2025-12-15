@@ -9,6 +9,16 @@ services:
     container_name: pelican_panel-mariadb-1
     restart: unless-stopped
 
+    # Performance optimizations for faster init and migrations
+    command:
+      - --skip-log-bin
+      - --innodb-flush-log-at-trx-commit=2
+      - --innodb-flush-method=O_DIRECT
+      - --innodb-buffer-pool-size=128M
+      - --innodb-log-file-size=32M
+      - --innodb-doublewrite=OFF
+      - --performance-schema=OFF
+
     volumes:
       - ${DATA_ROOT}/mariadb:/var/lib/mysql
 
@@ -58,8 +68,10 @@ services:
       - /var/packages/pelican_panel/target/share/patches/Node.php:/var/www/html/app/Models/Node.php:ro
       - /var/packages/pelican_panel/target/share/patches/CreateNode.php:/var/www/html/app/Filament/Admin/Resources/Nodes/Pages/CreateNode.php:ro
       - /var/packages/pelican_panel/target/share/patches/EditNode.php:/var/www/html/app/Filament/Admin/Resources/Nodes/Pages/EditNode.php:ro
-      # Patched installer to fix APP_URL detection in Docker (uses window.location.origin)
+      # Patched installer to fix APP_URL detection in Docker (uses config instead of browser URL)
       - /var/packages/pelican_panel/target/share/patches/EnvironmentStep.php:/var/www/html/app/Livewire/Installer/Steps/EnvironmentStep.php:ro
+      # Patched installer to pre-fill database settings from environment variables
+      - /var/packages/pelican_panel/target/share/patches/DatabaseStep.php:/var/www/html/app/Livewire/Installer/Steps/DatabaseStep.php:ro
       # Patched CSRF middleware to allow Livewire in DSM iframe (excludes livewire/* from CSRF)
       - /var/packages/pelican_panel/target/share/patches/VerifyCsrfToken.php:/var/www/html/app/Http/Middleware/VerifyCsrfToken.php:ro
 

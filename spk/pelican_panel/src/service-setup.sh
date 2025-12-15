@@ -115,20 +115,12 @@ hydrate_env_file()
         sed -i "s#DB_PASSWORD=.*#DB_PASSWORD=${DB_PASSWORD}#" "${ENV_FILE}"
         sed -i "s#DB_ROOT_PASSWORD=.*#DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}#" "${ENV_FILE}"
 
-        # Use wizard-provided URL if available (detected from browser)
-        # Otherwise fallback to auto-detected NAS IP
-        local app_url=""
-        if [ -n "${wizard_app_url}" ]; then
-            # URL from wizard (includes protocol and port, e.g., https://domain.com:8080)
-            app_url="${wizard_app_url}"
-            log "Using wizard-provided URL: ${app_url}"
-        else
-            # Fallback: Auto-detect NAS IP address
-            local app_host=$(detect_nas_ip)
-            app_host="${app_host:-localhost}"
-            log "Auto-detected IP: ${app_host}"
-            app_url="http://${app_host}:8080"
-        fi
+        # Always use auto-detected NAS IP for APP_URL
+        # This ensures local IP is used instead of QuickConnect URLs
+        local app_host=$(detect_nas_ip)
+        app_host="${app_host:-localhost}"
+        log "Auto-detected NAS IP: ${app_host}"
+        local app_url="http://${app_host}:8080"
 
         # Extract port from URL for PANEL_PORT
         local app_port="8080"
